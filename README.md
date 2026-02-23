@@ -34,7 +34,7 @@ Access:
 - Seed login: admin@example.com / changeme
 
 ## Configure environment
-Copy `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/apps/api/.env.example` to `.env` in the same folder and set:
+Copy `apps/api/.env.example` to `.env` in the same folder and set:
 - `DATABASE_URL` (e.g., `postgresql://postgres:postgres@db:5432/exotel_whatsapp`)
 - `REDIS_URL`
 - `JWT_SECRET`
@@ -60,7 +60,7 @@ docker compose -f docker-compose.prod.yml up -d
 - `GET /api/v1/onboarding-links`, `POST /api/v1/onboarding-links`, `GET /api/v1/onboarding-links/validate?token=...`
 - `POST /api/v1/webhooks/exotel`, `GET /api/v1/webhooks/logs`
 - Health: `/healthz`, `/readyz`, metrics at `/metrics`
-- OpenAPI: `/docs/openapi.yaml` (file at `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/apps/api/openapi.yml`)
+- OpenAPI: `/docs/openapi.yaml` (file at `apps/api/openapi.yml`)
 
 ## Coverage vs Exotel docs
 - Messaging API ([developer.exotel.com/api/whatsapp](https://developer.exotel.com/api/whatsapp)): supports text/media/template payloads, `custom_data`, `status_callback`, and bulk sends; status available via stored message record and webhook ingestion.
@@ -72,11 +72,11 @@ docker compose -f docker-compose.prod.yml up -d
 - Run with `node dist/worker.js` (already wired in compose).
 
 ## Directory layout
-- `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/apps/api` – Express API, Prisma schema, queue worker, Dockerfile
-- `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/apps/ui` – React + Vite admin UI, Dockerfile
-- `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/docker-compose.dev.yml` – dev stack
-- `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/docker-compose.prod.yml` – prod stack + Caddy
-- `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/deploy/Caddyfile` – reverse proxy config
+- `apps/api` – Express API, Prisma schema, queue worker, Dockerfile
+- `apps/ui` – React + Vite admin UI, Dockerfile
+- `docker-compose.dev.yml` – dev stack
+- `docker-compose.prod.yml` – prod stack + Caddy
+- `deploy/Caddyfile` – reverse proxy config
 
 ## Testing
 - Placeholder vitest setup. Add unit tests for Exotel client, auth, queue handlers, and integration tests with Testcontainers.
