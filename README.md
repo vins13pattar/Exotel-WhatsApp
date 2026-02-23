@@ -71,10 +71,11 @@ docker compose -f docker-compose.prod.yml up -d
 - UI exposed on port 8080 via reverse proxy (Caddy)
 
 ## GitHub Pages landing page
-- Source files: `docs/index.html`, `docs/coverage.html`, `docs/styles.css`, `docs/app.js`
+- Source files: `docs/index.html`, `docs/coverage.html`, `docs/openapi.yaml`, `docs/styles.css`, `docs/app.js`, `docs/CNAME`
 - Deployment workflow: `.github/workflows/pages.yml`
-- Live URL (after Pages is enabled): `https://vins13pattar.github.io/Exotel-WhatsApp/`
-- Coverage matrix URL: `https://vins13pattar.github.io/Exotel-WhatsApp/coverage.html`
+- Live URL: `https://vinodspattar.in/Exotel-WhatsApp/`
+- Coverage matrix URL: `https://vinodspattar.in/Exotel-WhatsApp/coverage.html`
+- Static OpenAPI URL: `https://vinodspattar.in/Exotel-WhatsApp/openapi.yaml`
 - In repository settings, set Pages source to `GitHub Actions` once.
 
 ## API Surface (v1)
