@@ -1,0 +1,30 @@
+# Node
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+apps/api/dist
+apps/ui/dist
+coverage
+
+# Env
+.env
+.env.*
+
+# Prisma
+apps/api/prisma/dev.db
+apps/api/prisma/dev.db-journal
+
+# Logs
+logs
+*.log
+
+# Docker
+*.pid
+.DS_Store
+
+# Vite
+apps/ui/.vite

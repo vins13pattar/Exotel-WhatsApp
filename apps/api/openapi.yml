@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: Exotel WhatsApp API
+  version: 0.1.0
+servers:
+  - url: http://localhost:4000
+paths:
+  /api/v1/auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: JWT token
+  /api/v1/credentials:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: List credentials } }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label: { type: string }
+                apiKey: { type: string }
+                apiToken: { type: string }
+                subdomain: { type: string }
+                sid: { type: string }
+      responses: { '201': { description: Created } }
+  /api/v1/messages:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: List messages } }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to: { type: string }
+                type: { type: string }
+                body: { type: object }
+                credentialId: { type: string }
+      responses: { '202': { description: Queued } }
+  /api/v1/templates:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: List templates } }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                category: { type: string }
+                language: { type: string }
+                payload: { type: object }
+      responses: { '201': { description: Created } }
+  /api/v1/onboarding-links:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: List links } }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count: { type: integer }
+                credentialId: { type: string }
+      responses: { '201': { description: Created } }
+  /api/v1/webhooks/exotel:
+    post:
+      summary: Receive Exotel callbacks
+      responses: { '200': { description: ok } }
+  /api/v1/webhooks/logs:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: List events } }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

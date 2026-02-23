@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MessageStatus {
+  QUEUED
+  SENDING
+  SENT
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum TemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DISABLED
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model Tenant {
+  id              String           @id @default(cuid())
+  name            String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  users           User[]
+  credentials     Credential[]
+  templates       Template[]
+  messages        Message[]
+  webhookEvents   WebhookEvent[]
+  onboardingLinks OnboardingLink[]
+  audits          Audit[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(EDITOR)
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions  Session[]
+  audits    Audit[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Credential {
+  id             String   @id @default(cuid())
+  label          String
+  apiKey         String
+  apiToken       String
+  subdomain      String
+  sid            String
+  region         String?
+  status         String   @default("active")
+  lastVerifiedAt DateTime?
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  templates      Template[]
+  messages       Message[]
+}
+
+model Template {
+  id         String         @id @default(cuid())
+  externalId String?        @unique
+  name       String
+  category   String
+  language   String
+  status     TemplateStatus @default(PENDING)
+  payload    Json
+  mediaId    String?
+  syncedAt   DateTime?
+  credentialId String?
+  credential  Credential?   @relation(fields: [credentialId], references: [id])
+  tenantId    String
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Message {
+  id              String         @id @default(cuid())
+  idempotencyKey  String?        @unique
+  to              String
+  from            String?
+  type            String
+  body            Json
+  status          MessageStatus  @default(QUEUED)
+  externalId      String?
+  customData      Json?
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  failedReason    String?
+  credentialId    String?
+  credential      Credential?    @relation(fields: [credentialId], references: [id])
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  source      String
+  payload     Json
+  processed   Boolean  @default(false)
+  retries     Int      @default(0)
+  nextRetryAt DateTime?
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model OnboardingLink {
+  id            String   @id @default(cuid())
+  token         String   @unique
+  url           String
+  expiresAt     DateTime
+  remainingUses Int      @default(5)
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Audit {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  changes   Json
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+}

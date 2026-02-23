@@ -1,0 +1,54 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: exotel_whatsapp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+  api:
+    build:
+      context: ./apps/api
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/exotel_whatsapp
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: changeme
+      EXOTEL_REGION: api.exotel.com
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "4000:4000"
+  worker:
+    build:
+      context: ./apps/api
+    command: node dist/worker.js
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/exotel_whatsapp
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: changeme
+      EXOTEL_REGION: api.exotel.com
+    depends_on:
+      - db
+      - redis
+  ui:
+    build:
+      context: ./apps/ui
+    ports:
+      - "8080:80"
+  reverse-proxy:
+    image: caddy:2.7-alpine
+    depends_on:
+      - api
+      - ui
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+volumes:
+  pgdata:

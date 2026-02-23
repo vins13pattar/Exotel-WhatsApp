@@ -1,0 +1,17 @@
+{
+  "name": "exotel-whatsapp",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/api",
+    "apps/ui"
+  ],
+  "scripts": {
+    "dev": "npm -w apps/api run dev",
+    "dev:ui": "npm -w apps/ui run dev",
+    "dev:api": "npm -w apps/api run dev",
+    "lint": "npm -w apps/api run lint && npm -w apps/ui run lint",
+    "test": "npm -w apps/api run test && npm -w apps/ui run test",
+    "build": "npm -w apps/api run build && npm -w apps/ui run build"
+  }
+}
