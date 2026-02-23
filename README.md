@@ -55,12 +55,17 @@ docker compose -f docker-compose.prod.yml up -d
 - `POST /api/v1/auth/login` – email/password login
 - `POST /api/v1/auth/refresh`
 - `GET/POST /api/v1/credentials`
-- `GET/POST /api/v1/messages`, `POST /api/v1/messages/:id/cancel`
-- `GET/POST /api/v1/templates`
-- `GET/POST /api/v1/onboarding-links`
+- `GET /api/v1/messages`, `GET /api/v1/messages/:id`, `POST /api/v1/messages` (single or bulk), `POST /api/v1/messages/:id/cancel`
+- `GET /api/v1/templates` (local cache) or `GET /api/v1/templates?remote=true&status=&category=&language=&limit=&before=&after&credentialId=` for live Exotel list; `POST /api/v1/templates`; `PUT /api/v1/templates/:id`; `POST /api/v1/templates/upload-sample`
+- `GET /api/v1/onboarding-links`, `POST /api/v1/onboarding-links`, `GET /api/v1/onboarding-links/validate?token=...`
 - `POST /api/v1/webhooks/exotel`, `GET /api/v1/webhooks/logs`
 - Health: `/healthz`, `/readyz`, metrics at `/metrics`
 - OpenAPI: `/docs/openapi.yaml` (file at `/Users/vinod/Projects/Open Source/Exotel-WhatsApp/apps/api/openapi.yml`)
+
+## Coverage vs Exotel docs
+- Messaging API ([developer.exotel.com/api/whatsapp](https://developer.exotel.com/api/whatsapp)): supports text/media/template payloads, `custom_data`, `status_callback`, and bulk sends; status available via stored message record and webhook ingestion.
+- Template Management API ([developer.exotel.com/api/whatsapp-template-management-apis](https://developer.exotel.com/api/whatsapp-template-management-apis)): supports list with filters, create, update, and sample media upload (`/api/v1/templates/upload-sample`).
+- Onboarding API ([developer.exotel.com/api/whatsapp-onboarding-apis](https://developer.exotel.com/api/whatsapp-onboarding-apis)): supports link generation and token validation (`/api/v1/onboarding-links/validate`).
 
 ## Background Worker
 - Queue `send-messages` (BullMQ) sends outbound messages via Exotel.
