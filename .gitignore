@@ -13,6 +13,7 @@ coverage
 # Env
 .env
 .env.*
+!**/.env.example
 
 # Prisma
 apps/api/prisma/dev.db

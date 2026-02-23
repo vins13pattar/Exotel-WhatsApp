@@ -89,8 +89,14 @@
               <td><span class="badge ok">Covered</span></td>
             </tr>
             <tr>
-              <td><code>PUT /v2/accounts/{sid}/templates/{templateId}</code></td>
+              <td><code>PUT /v2/accounts/{sid}/templates?waba_id=...</code></td>
               <td><code>PUT /api/v1/templates/:id</code></td>
+              <td><code>apps/api/src/routes/templates.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+            <tr>
+              <td><code>DELETE /v2/accounts/{sid}/templates?waba_id=...</code></td>
+              <td><code>DELETE /api/v1/templates</code></td>
               <td><code>apps/api/src/routes/templates.ts</code></td>
               <td><span class="badge ok">Covered</span></td>
             </tr>
@@ -136,6 +142,7 @@
       <section class="card" style="margin-top: 20px; margin-bottom: 32px;">
         <h2>Notes</h2>
         <p>Coverage is exposed through project-level routes that wrap Exotel operations and add auth, tenant scoping, persistence, and queue orchestration.</p>
+        <p>Validation guardrails include E.164 phone format, canonical <code>whatsapp.messages[]</code> payload checks, bulk cap of 100 messages, onboarding generation cap of 50 links, and required <code>waba_id</code> for Exotel template operations.</p>
         <p>For full request/response shapes, review <code>apps/api/openapi.yml</code> and Exotel docs.</p>
       </section>
     </main>

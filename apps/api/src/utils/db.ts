@@ -5,7 +5,7 @@ const prisma = new PrismaClient({
   log: ['error', 'warn']
 })
 
-prisma.$on('error', (e) => {
+prisma.$on('error', (e: any) => {
   logger.error({ prisma: e }, 'Prisma error')
 })
 

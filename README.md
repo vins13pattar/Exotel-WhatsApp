@@ -58,9 +58,10 @@ Copy `apps/api/.env.example` to `.env` in the same folder and set:
 - `REDIS_URL`
 - `JWT_SECRET`
 - `EXOTEL_REGION` (e.g., `api.exotel.com` or `api.in.exotel.com`)
+- `EXOTEL_WEBHOOK_SECRET` (optional, enables HMAC validation for incoming webhooks)
 
 ## Provision Exotel credentials
-Use the UI (Credentials page) or call `POST /api/v1/credentials` with `label`, `apiKey`, `apiToken`, `subdomain`, `sid`, `region`. All messaging/template/onboarding calls use these credentials.
+Use the UI (Credentials page) or call `POST /api/v1/credentials` with `label`, `apiKey`, `apiToken`, `subdomain`, `sid`, `region`. All messaging/template/onboarding calls use these credentials. For template APIs against Exotel, also provide `wabaId` per request.
 
 ## Production (compose)
 ```bash
@@ -83,16 +84,16 @@ docker compose -f docker-compose.prod.yml up -d
 - `POST /api/v1/auth/refresh`
 - `GET/POST /api/v1/credentials`
 - `GET /api/v1/messages`, `GET /api/v1/messages/:id`, `POST /api/v1/messages` (single or bulk), `POST /api/v1/messages/:id/cancel`
-- `GET /api/v1/templates` (local cache) or `GET /api/v1/templates?remote=true&status=&category=&language=&limit=&before=&after&credentialId=` for live Exotel list; `POST /api/v1/templates`; `PUT /api/v1/templates/:id`; `POST /api/v1/templates/upload-sample`
+- `GET /api/v1/templates` (local cache) or `GET /api/v1/templates?remote=true&credentialId=...&wabaId=...` for live Exotel list; `POST /api/v1/templates`; `PUT /api/v1/templates/:id`; `DELETE /api/v1/templates`; `POST /api/v1/templates/upload-sample`
 - `GET /api/v1/onboarding-links`, `POST /api/v1/onboarding-links`, `GET /api/v1/onboarding-links/validate?token=...`
 - `POST /api/v1/webhooks/exotel`, `GET /api/v1/webhooks/logs`
 - Health: `/healthz`, `/readyz`, metrics at `/metrics`
 - OpenAPI: `/docs/openapi.yaml` (file at `apps/api/openapi.yml`)
 
 ## Coverage vs Exotel docs
-- Messaging API ([developer.exotel.com/api/whatsapp](https://developer.exotel.com/api/whatsapp)): supports text/media/template payloads, `custom_data`, `status_callback`, and bulk sends; status available via stored message record and webhook ingestion.
-- Template Management API ([developer.exotel.com/api/whatsapp-template-management-apis](https://developer.exotel.com/api/whatsapp-template-management-apis)): supports list with filters, create, update, and sample media upload (`/api/v1/templates/upload-sample`).
-- Onboarding API ([developer.exotel.com/api/whatsapp-onboarding-apis](https://developer.exotel.com/api/whatsapp-onboarding-apis)): supports link generation and token validation (`/api/v1/onboarding-links/validate`).
+- Messaging API ([developer.exotel.com/api/whatsapp](https://developer.exotel.com/api/whatsapp)): supports canonical Exotel payload (`whatsapp.messages[]`) with strict E.164 validation, `custom_data`, `status_callback`, and bulk sends up to 100 messages; status available via stored message record and webhook ingestion.
+- Template Management API ([developer.exotel.com/api/whatsapp-template-management-apis](https://developer.exotel.com/api/whatsapp-template-management-apis)): supports list/create/update/delete with required `waba_id` and sample media upload (`/api/v1/templates/upload-sample`).
+- Onboarding API ([developer.exotel.com/api/whatsapp-onboarding-apis](https://developer.exotel.com/api/whatsapp-onboarding-apis)): supports link generation (up to 50 per request) and token validation (`/api/v1/onboarding-links/validate`).
 
 ## Background Worker
 - Queue `send-messages` (BullMQ) sends outbound messages via Exotel.
@@ -109,7 +110,7 @@ docker compose -f docker-compose.prod.yml up -d
 - Placeholder vitest setup. Add unit tests for Exotel client, auth, queue handlers, and integration tests with Testcontainers.
 
 ## Notes
-- Template creation and onboarding link generation call Exotel; in local/dev they will fall back to dummy data if the API call fails.
+- Template, onboarding, and message sends are forwarded to Exotel; failures are returned as API errors and persisted in message/audit state.
 - Redis is recommended; without it, queue/rate-limit features will not work.
 
 ## Contributing

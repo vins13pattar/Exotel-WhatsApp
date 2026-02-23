@@ -28,25 +28,21 @@ router.get('/validate', requireAuth, async (req, res) => {
 })
 
 router.post('/', requireAuth, async (req, res) => {
-  const schema = z.object({ count: z.number().min(1).max(5).default(1), credentialId: z.string().optional() })
+  const schema = z.object({ count: z.number().int().min(1).max(50).default(1), credentialId: z.string().optional() })
   const parsed = schema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() })
 
   const links = []
   const credential = parsed.data.credentialId
-    ? await prisma.credential.findUnique({ where: { id: parsed.data.credentialId } })
+    ? await prisma.credential.findFirst({ where: { id: parsed.data.credentialId, tenantId: req.authUser!.tenantId } })
     : await prisma.credential.findFirst({ where: { tenantId: req.authUser!.tenantId } })
+  if (!credential) return res.status(400).json({ error: 'Credential required' })
 
   for (let i = 0; i < parsed.data.count; i++) {
-    let url = 'https://example.com/onboard'
-    let token = 'dummy-token'
-    if (credential) {
-      try {
-        const result = await createOnboardingLink(credential)
-        url = result?.url ?? url
-        token = result?.token ?? token
-      } catch {}
-    }
+    const result = await createOnboardingLink(credential)
+    const url = result?.url ?? result?.data?.url
+    const token = result?.token ?? result?.data?.token
+    if (!url || !token) return res.status(502).json({ error: 'Exotel onboarding response missing url/token' })
     const link = await prisma.onboardingLink.create({
       data: {
         url,

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Exotel WhatsApp API
-  version: 0.2.0
+  version: 0.3.0
 servers:
   - url: http://localhost:4000
 paths:
@@ -14,6 +14,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [email, password]
               properties:
                 email: { type: string }
                 password: { type: string }
@@ -28,6 +29,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [token]
               properties:
                 token: { type: string }
       responses:
@@ -62,6 +64,11 @@ paths:
     post:
       security: [{ bearerAuth: [] }]
       summary: Send single or bulk WhatsApp messages
+      parameters:
+        - in: header
+          name: idempotency-key
+          required: false
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -69,45 +76,79 @@ paths:
             schema:
               oneOf:
                 - type: object
-                  required: [to, type, body, credentialId]
-                  properties:
-                    to: { type: string }
-                    type: { type: string }
-                    body: { type: object }
-                    credentialId: { type: string }
-                    status_callback: { type: string, format: uri }
-                    custom_data: {}
-                - type: object
                   required: [credentialId, whatsapp]
                   properties:
                     credentialId: { type: string }
+                    custom_data: {}
                     status_callback: { type: string, format: uri }
                     whatsapp:
                       type: object
+                      required: [messages]
                       properties:
                         messages:
                           type: array
-                          items: { type: object }
-      responses: { '202': { description: Queued } }
+                          minItems: 1
+                          maxItems: 100
+                          items:
+                            type: object
+                            required: [from, to, content]
+                            properties:
+                              from: { type: string, example: '+14155552671' }
+                              to: { type: string, example: '+14155552672' }
+                              content:
+                                type: object
+                                required: [type]
+                                properties:
+                                  type: { type: string, example: text }
+                - type: object
+                  description: Legacy backward-compatible payload
+                  required: [credentialId, to, type, body]
+                  properties:
+                    credentialId: { type: string }
+                    to: { type: string, example: '+14155552672' }
+                    from: { type: string, example: '+14155552671' }
+                    type: { type: string, example: text }
+                    body: { type: object }
+                    custom_data: {}
+                    status_callback: { type: string, format: uri }
+      responses:
+        '202': { description: Queued }
+        '400': { description: Validation failed }
+
   /api/v1/messages/{id}:
     get:
       security: [{ bearerAuth: [] }]
       responses: { '200': { description: Message status } }
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+
+  /api/v1/messages/{id}/cancel:
     post:
       security: [{ bearerAuth: [] }]
       summary: Cancel queued message
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
       responses: { '200': { description: Cancelled } }
 
   /api/v1/templates:
     get:
       security: [{ bearerAuth: [] }]
-      summary: List templates (local cache) or set `remote=true` to fetch from Exotel with filters
+      summary: List templates (local cache) or set remote=true to fetch from Exotel
       parameters:
         - in: query
           name: remote
-          schema: { type: string }
+          schema: { type: string, enum: ['true', 'false'] }
         - in: query
           name: credentialId
+          schema: { type: string }
+        - in: query
+          name: wabaId
           schema: { type: string }
         - in: query
           name: status
@@ -128,8 +169,10 @@ paths:
           name: after
           schema: { type: string }
       responses: { '200': { description: Templates } }
+
     post:
       security: [{ bearerAuth: [] }]
+      summary: Create template locally and optionally in Exotel
       requestBody:
         required: true
         content:
@@ -143,11 +186,45 @@ paths:
                 language: { type: string }
                 payload: { type: object }
                 credentialId: { type: string }
+                wabaId: { type: string }
       responses: { '201': { description: Created } }
+
+    delete:
+      security: [{ bearerAuth: [] }]
+      summary: Delete templates in Exotel (requires wabaId)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [credentialId, wabaId, payload]
+              properties:
+                credentialId: { type: string }
+                wabaId: { type: string }
+                payload:
+                  type: object
+                  required: [whatsapp]
+                  properties:
+                    whatsapp:
+                      type: object
+                      required: [templates]
+                      properties:
+                        templates:
+                          type: array
+                          minItems: 1
+                          items: { type: object }
+      responses: { '200': { description: Deleted } }
+
   /api/v1/templates/{id}:
     put:
       security: [{ bearerAuth: [] }]
-      summary: Update template and optionally push to Exotel
+      summary: Update template locally and optionally in Exotel
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -160,7 +237,9 @@ paths:
                 language: { type: string }
                 payload: { type: object }
                 credentialId: { type: string }
+                wabaId: { type: string }
       responses: { '200': { description: Updated } }
+
   /api/v1/templates/upload-sample:
     post:
       security: [{ bearerAuth: [] }]
@@ -171,6 +250,7 @@ paths:
           multipart/form-data:
             schema:
               type: object
+              required: [file, credentialId]
               properties:
                 file:
                   type: string
@@ -184,6 +264,7 @@ paths:
       responses: { '200': { description: List links } }
     post:
       security: [{ bearerAuth: [] }]
+      summary: Generate onboarding links (1-50)
       requestBody:
         required: true
         content:
@@ -191,9 +272,10 @@ paths:
             schema:
               type: object
               properties:
-                count: { type: integer }
+                count: { type: integer, minimum: 1, maximum: 50 }
                 credentialId: { type: string }
       responses: { '201': { description: Created } }
+
   /api/v1/onboarding-links/validate:
     get:
       security: [{ bearerAuth: [] }]
@@ -211,7 +293,17 @@ paths:
   /api/v1/webhooks/exotel:
     post:
       summary: Receive Exotel callbacks
-      responses: { '200': { description: ok } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': { description: ok }
+        '400': { description: Validation failed }
+        '401': { description: Signature validation failed }
+
   /api/v1/webhooks/logs:
     get:
       security: [{ bearerAuth: [] }]

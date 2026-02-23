@@ -7,11 +7,12 @@ type Message = {
   createdAt: string
 }
 
-type Credential = { id: string; label: string }
+type Credential = { id: string, label: string }
 
 export default function Messages () {
   const [to, setTo] = useState('')
-  const [body, setBody] = useState('Hello from Exotel WhatsApp')
+  const [from, setFrom] = useState('')
+  const [text, setText] = useState('Hello from Exotel WhatsApp')
   const [credentialId, setCredentialId] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [credentials, setCredentials] = useState<Credential[]>([])
@@ -29,45 +30,66 @@ export default function Messages () {
   }
 
   useEffect(() => {
-    fetchMessages(); fetchCreds()
+    void fetchMessages()
+    void fetchCreds()
   }, [])
 
   const send = async () => {
+    const payload = {
+      credentialId,
+      whatsapp: {
+        messages: [
+          {
+            from,
+            to,
+            content: {
+              type: 'text',
+              text
+            }
+          }
+        ]
+      }
+    }
+
     await fetch('/api/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...tokenHeader },
-      body: JSON.stringify({ to, type: 'text', body: { text: body }, credentialId })
+      body: JSON.stringify(payload)
     })
-    setTo(''); fetchMessages()
+    setTo('')
+    setText('Hello from Exotel WhatsApp')
+    await fetchMessages()
   }
 
   return (
     <div>
       <h1>Messages</h1>
-      <div className="card">
+      <div className='card'>
         <h3>Send Test Message</h3>
-        <label>Recipient</label>
-        <input value={to} onChange={e => setTo(e.target.value)} />
-        <label>Body</label>
-        <textarea value={body} onChange={e => setBody(e.target.value)} />
+        <label>Sender (E.164)</label>
+        <input value={from} onChange={e => setFrom(e.target.value)} placeholder='+14155552671' />
+        <label>Recipient (E.164)</label>
+        <input value={to} onChange={e => setTo(e.target.value)} placeholder='+14155552672' />
+        <label>Text</label>
+        <textarea value={text} onChange={e => setText(e.target.value)} />
         <label>Credential</label>
         <select value={credentialId} onChange={e => setCredentialId(e.target.value)}>
-          <option value="">Select credential</option>
+          <option value=''>Select credential</option>
           {credentials.map(c => <option value={c.id} key={c.id}>{c.label}</option>)}
         </select>
-        <button onClick={send}>Send</button>
+        <button onClick={() => { void send() }}>Send</button>
       </div>
 
-      <div className="card">
+      <div className='card'>
         <h3>Recent Messages</h3>
-        <table className="table">
+        <table className='table'>
           <thead><tr><th>ID</th><th>To</th><th>Status</th><th>Created</th></tr></thead>
           <tbody>
             {messages.map(m => (
               <tr key={m.id}>
                 <td>{m.id}</td>
                 <td>{m.to}</td>
-                <td><span className="badge">{m.status}</span></td>
+                <td><span className='badge'>{m.status}</span></td>
                 <td>{new Date(m.createdAt).toLocaleString()}</td>
               </tr>
             ))}

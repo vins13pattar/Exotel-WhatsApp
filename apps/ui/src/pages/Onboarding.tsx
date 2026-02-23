@@ -27,8 +27,8 @@ export default function Onboarding () {
       <h1>Onboarding Links</h1>
       <div className="card">
         <h3>Generate Links</h3>
-        <label>Count (max 5)</label>
-        <input type="number" value={count} onChange={e => setCount(Number(e.target.value))} />
+        <label>Count (max 50)</label>
+        <input type="number" min={1} max={50} value={count} onChange={e => setCount(Number(e.target.value))} />
         <button onClick={generate}>Generate</button>
       </div>
 
