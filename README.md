@@ -2,6 +2,10 @@
 
 Open-source, dockerized reference implementation to manage Exotel WhatsApp Business APIs with a REST backend and admin UI.
 
+> Disclaimer: This is an unofficial community project and is not affiliated with, endorsed by, or maintained by Exotel.
+
+Built with Codex app and love from Bengaluru.
+
 ## Features
 - REST API for auth, credential management, messaging, templates, onboarding links, and webhooks.
 - React admin UI for day-to-day operations (send tests, manage templates, view webhooks).
@@ -33,6 +37,21 @@ Access:
 - UI at http://localhost:5173
 - Seed login: admin@example.com / changeme
 
+## Seed admin user
+Use one of these commands to create the default admin user (`admin@example.com` / `changeme`):
+
+Local npm run:
+```bash
+npm -w apps/api run prisma:seed
+```
+
+Docker (dev compose):
+```bash
+docker compose -f docker-compose.dev.yml run --rm api npm run prisma:seed
+```
+
+If the user already exists, the seed is safe to run again.
+
 ## Configure environment
 Copy `apps/api/.env.example` to `.env` in the same folder and set:
 - `DATABASE_URL` (e.g., `postgresql://postgres:postgres@db:5432/exotel_whatsapp`)
@@ -50,6 +69,13 @@ docker compose -f docker-compose.prod.yml up -d
 ```
 - API exposed on port 4000
 - UI exposed on port 8080 via reverse proxy (Caddy)
+
+## GitHub Pages landing page
+- Source files: `docs/index.html`, `docs/coverage.html`, `docs/styles.css`, `docs/app.js`
+- Deployment workflow: `.github/workflows/pages.yml`
+- Live URL (after Pages is enabled): `https://vins13pattar.github.io/Exotel-WhatsApp/`
+- Coverage matrix URL: `https://vins13pattar.github.io/Exotel-WhatsApp/coverage.html`
+- In repository settings, set Pages source to `GitHub Actions` once.
 
 ## API Surface (v1)
 - `POST /api/v1/auth/login` – email/password login

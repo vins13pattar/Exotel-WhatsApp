@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Exotel WhatsApp: open-source, dockerized control plane for Exotel WhatsApp Business APIs."
+    />
+    <title>Exotel WhatsApp | Open-source Dockerized API + Admin UI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="aurora aurora-left"></div>
+    <div class="aurora aurora-right"></div>
+
+    <header class="topbar container">
+      <a class="brand" href="#home">Exotel WhatsApp</a>
+      <nav class="nav">
+        <a href="#features">Features</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="https://github.com/vins13pattar/Exotel-WhatsApp" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="home" class="container">
+      <section class="hero reveal">
+        <p class="eyebrow">Open Source • Dockerized • Production Ready</p>
+        <h1>Control Exotel WhatsApp APIs with one deployable platform.</h1>
+        <p class="hero-copy">
+          Exotel WhatsApp bundles API orchestration, queue workers, webhook ingestion, and a full admin UI into one stack built with Node.js,
+          PostgreSQL, Redis, and Docker.
+        </p>
+        <p class="notice">Unofficial community project. Not affiliated with or endorsed by Exotel.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://github.com/vins13pattar/Exotel-WhatsApp" target="_blank" rel="noreferrer">Get Started</a>
+          <a class="btn btn-secondary" href="./coverage.html">API Coverage Matrix</a>
+        </div>
+        <div class="chip-row">
+          <span class="chip">Express + TypeScript API</span>
+          <span class="chip">React + Vite Admin UI</span>
+          <span class="chip">Prisma + PostgreSQL</span>
+          <span class="chip">BullMQ + Redis</span>
+        </div>
+      </section>
+
+      <section id="features" class="section reveal">
+        <h2>What You Get</h2>
+        <div class="grid cards-3">
+          <article class="card">
+            <h3>Messaging Orchestration</h3>
+            <p>Single and bulk sends, status callbacks, idempotent queueing, and persisted message records.</p>
+          </article>
+          <article class="card">
+            <h3>Template Operations</h3>
+            <p>Create, update, filter, and upload sample media while syncing template metadata to local cache.</p>
+          </article>
+          <article class="card">
+            <h3>Onboarding Flows</h3>
+            <p>Generate Exotel onboarding links and validate onboarding tokens from one authenticated surface.</p>
+          </article>
+          <article class="card">
+            <h3>Admin Console</h3>
+            <p>Credential vault, send test console, template manager, onboarding dashboard, and webhook viewer.</p>
+          </article>
+          <article class="card">
+            <h3>Operability</h3>
+            <p>Health endpoints, Prometheus metrics, structured logs, and worker isolation for asynchronous jobs.</p>
+          </article>
+          <article class="card">
+            <h3>Docker-first</h3>
+            <p>Dev and prod compose files, multi-stage images, Caddy reverse proxy, and reproducible onboarding.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="architecture" class="section reveal">
+        <h2>Architecture at a Glance</h2>
+        <div class="grid cards-2">
+          <article class="card mono">
+            <h3>Runtime Components</h3>
+            <pre>
+[ui] React + Vite
+   |
+[api] Express + Prisma
+   |
+[worker] BullMQ Processor
+   |
+[postgres] State + Audit
+[redis] Queue + Rate Limit
+            </pre>
+          </article>
+          <article class="card">
+            <h3>Exotel Coverage</h3>
+            <ul>
+              <li><a href="https://developer.exotel.com/api/whatsapp" target="_blank" rel="noreferrer">WhatsApp Messaging APIs</a></li>
+              <li><a href="https://developer.exotel.com/api/whatsapp-template-management-apis" target="_blank" rel="noreferrer">Template Management APIs</a></li>
+              <li><a href="https://developer.exotel.com/api/whatsapp-onboarding-apis" target="_blank" rel="noreferrer">Onboarding APIs</a></li>
+            </ul>
+            <p>See the full endpoint mapping in the coverage matrix.</p>
+            <a class="text-link" href="./coverage.html">Open Coverage Matrix →</a>
+          </article>
+        </div>
+      </section>
+
+      <section id="quickstart" class="section reveal">
+        <h2>Quickstart</h2>
+        <div class="card">
+          <pre><code>npm install
+npm -w apps/api run prisma:generate
+npm -w apps/api run prisma:migrate -- --name init
+npm -w apps/api run prisma:seed
+docker compose -f docker-compose.dev.yml up --build</code></pre>
+          <p>
+            Default login after seeding: <strong>admin@example.com / changeme</strong>.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer container">
+      <p>Built for operators shipping WhatsApp experiences on Exotel, crafted with Codex app and love from Bengaluru.</p>
+      <p>© <span id="year"></span> Exotel WhatsApp OSS</p>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

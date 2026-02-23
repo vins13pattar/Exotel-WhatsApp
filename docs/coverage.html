@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exotel WhatsApp Coverage Matrix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar container">
+      <a class="brand" href="./index.html">Exotel WhatsApp</a>
+      <nav class="nav">
+        <a href="./index.html#quickstart">Quickstart</a>
+        <a href="https://developer.exotel.com/api/whatsapp" target="_blank" rel="noreferrer">Messaging Docs</a>
+        <a href="https://developer.exotel.com/api/whatsapp-template-management-apis" target="_blank" rel="noreferrer">Template Docs</a>
+        <a href="https://developer.exotel.com/api/whatsapp-onboarding-apis" target="_blank" rel="noreferrer">Onboarding Docs</a>
+      </nav>
+    </header>
+
+    <main class="container section">
+      <h1 style="font-size: clamp(1.8rem, 3.8vw, 2.7rem); margin-bottom: 8px;">Exotel Endpoint Coverage Matrix</h1>
+      <p class="hero-copy" style="max-width: 980px;">This matrix maps Exotel WhatsApp APIs to the project routes and implementation references.</p>
+      <p class="notice">Unofficial community project. Not affiliated with or endorsed by Exotel.</p>
+
+      <section class="card" style="margin-top: 20px;">
+        <h2>Messaging API</h2>
+        <p>Reference: <a href="https://developer.exotel.com/api/whatsapp" target="_blank" rel="noreferrer">developer.exotel.com/api/whatsapp</a></p>
+        <table class="coverage-table">
+          <thead>
+            <tr>
+              <th>Exotel Operation</th>
+              <th>Project Route</th>
+              <th>Implementation</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>POST /v2/accounts/{sid}/messages</code> (single + bulk)</td>
+              <td><code>POST /api/v1/messages</code></td>
+              <td><code>apps/api/src/routes/messages.ts</code>, <code>apps/api/src/services/exotel.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+            <tr>
+              <td>Delivery callbacks / status webhooks</td>
+              <td><code>POST /api/v1/webhooks/exotel</code></td>
+              <td><code>apps/api/src/routes/webhooks.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+            <tr>
+              <td>Message status retrieval (local persisted state)</td>
+              <td><code>GET /api/v1/messages/:id</code></td>
+              <td><code>apps/api/src/routes/messages.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card" style="margin-top: 20px;">
+        <h2>Template Management API</h2>
+        <p>Reference: <a href="https://developer.exotel.com/api/whatsapp-template-management-apis" target="_blank" rel="noreferrer">developer.exotel.com/api/whatsapp-template-management-apis</a></p>
+        <table class="coverage-table">
+          <thead>
+            <tr>
+              <th>Exotel Operation</th>
+              <th>Project Route</th>
+              <th>Implementation</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>GET /v2/accounts/{sid}/templates</code> with filters</td>
+              <td><code>GET /api/v1/templates?remote=true</code></td>
+              <td><code>apps/api/src/routes/templates.ts</code>, <code>apps/api/src/services/exotel.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+            <tr>
+              <td><code>POST /v2/accounts/{sid}/templates</code></td>
+              <td><code>POST /api/v1/templates</code></td>
+              <td><code>apps/api/src/routes/templates.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+            <tr>
+              <td><code>PUT /v2/accounts/{sid}/templates/{templateId}</code></td>
+              <td><code>PUT /api/v1/templates/:id</code></td>
+              <td><code>apps/api/src/routes/templates.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+            <tr>
+              <td><code>POST /v2/accounts/{sid}/templates/sample</code></td>
+              <td><code>POST /api/v1/templates/upload-sample</code></td>
+              <td><code>apps/api/src/routes/templates.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card" style="margin-top: 20px;">
+        <h2>Onboarding API</h2>
+        <p>Reference: <a href="https://developer.exotel.com/api/whatsapp-onboarding-apis" target="_blank" rel="noreferrer">developer.exotel.com/api/whatsapp-onboarding-apis</a></p>
+        <table class="coverage-table">
+          <thead>
+            <tr>
+              <th>Exotel Operation</th>
+              <th>Project Route</th>
+              <th>Implementation</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>POST /v2/accounts/{sid}/isv</code> (link generation)</td>
+              <td><code>POST /api/v1/onboarding-links</code></td>
+              <td><code>apps/api/src/routes/onboarding.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+            <tr>
+              <td><code>GET /v2/accounts/{sid}/isv?access_token=...</code></td>
+              <td><code>GET /api/v1/onboarding-links/validate</code></td>
+              <td><code>apps/api/src/routes/onboarding.ts</code></td>
+              <td><span class="badge ok">Covered</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card" style="margin-top: 20px; margin-bottom: 32px;">
+        <h2>Notes</h2>
+        <p>Coverage is exposed through project-level routes that wrap Exotel operations and add auth, tenant scoping, persistence, and queue orchestration.</p>
+        <p>For full request/response shapes, review <code>apps/api/openapi.yml</code> and Exotel docs.</p>
+      </section>
+    </main>
+
+    <footer class="footer container">
+      <p>Coverage matrix for GitHub Pages visitors, built with Codex app and love from Bengaluru.</p>
+      <p>© <span id="year"></span> Exotel WhatsApp OSS</p>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
