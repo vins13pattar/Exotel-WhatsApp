@@ -15,16 +15,39 @@ const remoteListQuerySchema = z.object({
   status: z.string().optional(),
   category: z.string().optional(),
   language: z.string().optional(),
+  name: z.string().optional(),
+  quality_score: z.string().optional(),
+  fields: z.string().optional(),
   limit: z.string().optional(),
   before: z.string().optional(),
   after: z.string().optional()
 })
 
+// Validated template component: type required, everything else passthrough
+const templateComponentSchema = z.object({ type: z.string().min(1) }).passthrough()
+
+// Validated template body: Exotel requires category, name, language, components[]
+const templateBodySchema = z.object({
+  category: z.string().min(1),
+  name: z.string().min(1),
+  language: z.string().min(1),
+  components: z.array(templateComponentSchema).min(1)
+}).passthrough()
+
+// Full Exotel create/update payload: whatsapp.templates[].template
+const templatePayloadSchema = z.object({
+  whatsapp: z.object({
+    templates: z.array(
+      z.object({ template: templateBodySchema }).passthrough()
+    ).min(1)
+  })
+}).passthrough()
+
 const templateWriteSchema = z.object({
   name: z.string(),
   category: z.string(),
   language: z.string(),
-  payload: z.record(z.any()),
+  payload: templatePayloadSchema,
   credentialId: z.string().optional(),
   wabaId: z.string().optional()
 })
@@ -33,7 +56,7 @@ const templateUpdateSchema = z.object({
   name: z.string().optional(),
   category: z.string().optional(),
   language: z.string().optional(),
-  payload: z.record(z.any()).optional(),
+  payload: templatePayloadSchema.optional(),
   credentialId: z.string().optional(),
   wabaId: z.string().optional()
 })
@@ -43,7 +66,9 @@ const templateDeleteSchema = z.object({
   wabaId: z.string(),
   payload: z.object({
     whatsapp: z.object({
-      templates: z.array(z.any()).min(1)
+      templates: z.array(
+        z.object({ template: z.object({ name: z.string().min(1) }).passthrough() }).passthrough()
+      ).min(1)
     })
   }).passthrough()
 })
@@ -73,7 +98,7 @@ router.get('/', requireAuth, async (req, res) => {
   const parsedQuery = remoteListQuerySchema.safeParse(req.query)
   if (!parsedQuery.success) return res.status(400).json({ error: parsedQuery.error.flatten() })
 
-  const { remote, credentialId, wabaId, status, category, language, limit, before, after } = parsedQuery.data
+  const { remote, credentialId, wabaId, status, category, language, name, quality_score, fields, limit, before, after } = parsedQuery.data
 
   if (remote === 'true') {
     if (!credentialId || !wabaId) {
@@ -84,7 +109,7 @@ router.get('/', requireAuth, async (req, res) => {
     if (!cred) return res.status(400).json({ error: 'Credential not found for this tenant' })
 
     try {
-      const data = await listTemplatesWithFilters(cred, wabaId, { status, category, language, limit, before, after })
+      const data = await listTemplatesWithFilters(cred, wabaId, { status, category, language, name, quality_score, fields, limit, before, after })
       const rows = Array.isArray(data?.data)
         ? data.data
         : Array.isArray(data?.whatsapp?.templates)
@@ -259,10 +284,33 @@ router.delete('/', requireAuth, async (req, res) => {
   }
 })
 
+const ALLOWED_SAMPLE_MIME_TYPES = new Set([
+  'application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'video/mp4'
+])
+const SAMPLE_MAX_BYTES: Record<string, number> = {
+  'application/pdf': 100 * 1024 * 1024,
+  'image/jpeg': 5 * 1024 * 1024,
+  'image/jpg': 5 * 1024 * 1024,
+  'image/png': 5 * 1024 * 1024,
+  'video/mp4': 16 * 1024 * 1024
+}
+
 router.post('/upload-sample', requireAuth, upload.single('file'), async (req, res) => {
   const credentialId = req.body.credentialId as string | undefined
   if (!req.file) return res.status(400).json({ error: 'file required' })
   if (!credentialId) return res.status(400).json({ error: 'credentialId required' })
+
+  if (!ALLOWED_SAMPLE_MIME_TYPES.has(req.file.mimetype)) {
+    return res.status(400).json({
+      error: `Unsupported file type: ${req.file.mimetype}. Allowed: ${[...ALLOWED_SAMPLE_MIME_TYPES].join(', ')}`
+    })
+  }
+  const maxBytes = SAMPLE_MAX_BYTES[req.file.mimetype] ?? 5 * 1024 * 1024
+  if (req.file.size > maxBytes) {
+    return res.status(400).json({
+      error: `File too large (${req.file.size} bytes). Max for ${req.file.mimetype}: ${maxBytes} bytes`
+    })
+  }
 
   const cred = await findTenantCredential(credentialId, req.authUser!.tenantId)
   if (!cred) return res.status(400).json({ error: 'Credential not found for this tenant' })

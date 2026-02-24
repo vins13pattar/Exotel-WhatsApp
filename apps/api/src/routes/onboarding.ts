@@ -16,7 +16,7 @@ router.get('/validate', requireAuth, async (req, res) => {
   const credentialId = req.query.credentialId as string | undefined
   if (!token) return res.status(400).json({ error: 'token required' })
   const cred = credentialId
-    ? await prisma.credential.findUnique({ where: { id: credentialId } })
+    ? await prisma.credential.findFirst({ where: { id: credentialId, tenantId: req.authUser!.tenantId } })
     : await prisma.credential.findFirst({ where: { tenantId: req.authUser!.tenantId } })
   if (!cred) return res.status(400).json({ error: 'Credential required' })
   try {
@@ -40,9 +40,15 @@ router.post('/', requireAuth, async (req, res) => {
 
   for (let i = 0; i < parsed.data.count; i++) {
     const result = await createOnboardingLink(credential)
-    const url = result?.url ?? result?.data?.url
-    const token = result?.token ?? result?.data?.token
-    if (!url || !token) return res.status(502).json({ error: 'Exotel onboarding response missing url/token' })
+    // Probe all documented field paths: top-level, data-wrapped, and nested response.whatsapp.isv.data
+    const isvData = result?.response?.whatsapp?.isv?.data
+    const url = result?.url ?? result?.onboarding_url ??
+      result?.data?.url ?? result?.data?.onboarding_url ??
+      isvData?.url ?? isvData?.onboarding_url
+    const token = result?.token ?? result?.access_token ??
+      result?.data?.token ?? result?.data?.access_token ??
+      isvData?.token ?? isvData?.access_token
+    if (!url || !token) return res.status(502).json({ error: 'Exotel onboarding response missing onboarding_url/access_token' })
     const link = await prisma.onboardingLink.create({
       data: {
         url,

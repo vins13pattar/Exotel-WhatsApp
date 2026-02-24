@@ -21,7 +21,7 @@ const exotelSingleMessageSchema = z.object({
 const canonicalSendSchema = z.object({
   credentialId: z.string().min(1),
   custom_data: z.union([z.string(), z.record(z.any())]).optional(),
-  status_callback: z.string().url().optional(),
+  status_callback: z.string().url().refine((value) => /^https?:\/\//i.test(value), 'status_callback must be http(s) URL').optional(),
   whatsapp: z.object({
     messages: z.array(exotelSingleMessageSchema).min(1).max(100)
   })
@@ -35,7 +35,7 @@ const legacySendSchema = z.object({
   type: z.string().min(1),
   body: z.record(z.any()),
   custom_data: z.union([z.string(), z.record(z.any())]).optional(),
-  status_callback: z.string().url().optional()
+  status_callback: z.string().url().refine((value) => /^https?:\/\//i.test(value), 'status_callback must be http(s) URL').optional()
 })
 
 type SendPayload = z.infer<typeof canonicalSendSchema>
@@ -64,6 +64,66 @@ function normalizeLegacyPayload (data: z.infer<typeof legacySendSchema>): SendPa
       messages: [{ from, to: data.to, content }]
     }
   }
+}
+
+function validateContentByType (content: Record<string, any>): string | null {
+  const type = String(content.type ?? '').toLowerCase()
+
+  if (type === 'text') {
+    const body = content?.text?.body
+    if (typeof body !== 'string' || body.trim().length === 0) return 'content.text.body is required when content.type=text'
+    return null
+  }
+
+  if (type === 'image' || type === 'audio' || type === 'video' || type === 'document' || type === 'sticker') {
+    const media = content?.[type]
+    if (!media || typeof media !== 'object' || typeof media.link !== 'string' || !/^https?:\/\//i.test(media.link)) {
+      return `content.${type}.link (http/https URL) is required when content.type=${type}`
+    }
+    return null
+  }
+
+  if (type === 'location') {
+    const location = content?.location
+    if (!location || typeof location !== 'object') return 'content.location is required when content.type=location'
+    if (typeof location.latitude !== 'string' || location.latitude.trim().length === 0) return 'content.location.latitude is required'
+    if (typeof location.longitude !== 'string' || location.longitude.trim().length === 0) return 'content.location.longitude is required'
+    return null
+  }
+
+  if (type === 'contacts') {
+    const contacts = content?.contacts
+    if (!Array.isArray(contacts) || contacts.length === 0) return 'content.contacts[] is required when content.type=contacts'
+    return null
+  }
+
+  if (type === 'interactive') {
+    const interactive = content?.interactive
+    if (!interactive || typeof interactive !== 'object') return 'content.interactive is required when content.type=interactive'
+    const interactiveType = String(interactive.type ?? '').toLowerCase()
+    if (!['button', 'list', 'flow'].includes(interactiveType)) {
+      return 'content.interactive.type must be one of: button, list, flow'
+    }
+    if (!interactive.body || typeof interactive.body !== 'object' || typeof interactive.body.text !== 'string' || interactive.body.text.trim().length === 0) {
+      return 'content.interactive.body.text is required when content.type=interactive'
+    }
+    if (!interactive.action || typeof interactive.action !== 'object') {
+      return 'content.interactive.action is required when content.type=interactive'
+    }
+    return null
+  }
+
+  if (type === 'template') {
+    const template = content?.template
+    if (!template || typeof template !== 'object') return 'content.template is required when content.type=template'
+    if (typeof template.namespace !== 'string' || template.namespace.trim().length === 0) return 'content.template.namespace is required'
+    if (typeof template.name !== 'string' || template.name.trim().length === 0) return 'content.template.name is required'
+    if (!template.language || typeof template.language !== 'object') return 'content.template.language is required'
+    if (!Array.isArray(template.components)) return 'content.template.components[] is required'
+    return null
+  }
+
+  return null
 }
 
 router.get('/', requireAuth, async (req, res) => {
@@ -130,6 +190,10 @@ router.post('/', requireAuth, async (req, res) => {
   }
 
   const messages = payload.whatsapp.messages
+  for (const msg of messages) {
+    const error = validateContentByType(msg.content as Record<string, any>)
+    if (error) return res.status(400).json({ error })
+  }
   const first = messages[0]
   const message = await prisma.message.create({
     data: {
