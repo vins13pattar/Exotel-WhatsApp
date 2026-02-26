@@ -3,6 +3,7 @@ import { prisma } from '../utils/db'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { config } from '../config'
+import { requireAuth } from '../middleware/auth'
 
 const router = Router()
 
@@ -26,6 +27,15 @@ router.post('/refresh', async (req, res) => {
   } catch {
     res.status(401).json({ error: 'Invalid token' })
   }
+})
+
+router.get('/me', requireAuth, async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.authUser!.userId },
+    select: { id: true, email: true, role: true, tenantId: true }
+  })
+  if (!user) return res.status(404).json({ error: 'User not found' })
+  res.json(user)
 })
 
 export default router

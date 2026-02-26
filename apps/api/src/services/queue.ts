@@ -5,7 +5,7 @@ import { prisma } from '../utils/db'
 import { sendMessage } from './exotel'
 import { logger } from '../utils/logger'
 
-const connection = new IORedis(config.redisUrl)
+const connection = new IORedis(config.redisUrl, { maxRetriesPerRequest: null })
 
 export const sendQueue = new Queue('send-messages', { connection })
 

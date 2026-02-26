@@ -4,11 +4,8 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main () {
-  const tenant = await prisma.tenant.upsert({
-    where: { name: 'Demo Tenant' },
-    update: {},
-    create: { name: 'Demo Tenant' }
-  })
+  const existing = await prisma.tenant.findFirst({ where: { name: 'Demo Tenant' } })
+  const tenant = existing ?? await prisma.tenant.create({ data: { name: 'Demo Tenant' } })
 
   const adminEmail = 'admin@example.com'
   const passwordHash = await bcrypt.hash('changeme', 10)

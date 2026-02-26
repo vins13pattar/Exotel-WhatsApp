@@ -23,12 +23,38 @@ a {
   background: #0f172a;
   color: #f8fafc;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar a {
   display: block;
   color: #e2e8f0;
   margin-bottom: 12px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #1e293b;
+}
+
+.sidebar-user {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-signout {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .main {
@@ -83,4 +109,92 @@ button {
   font-size: 12px;
   background: #e0f2fe;
   color: #0369a1;
+}
+
+/* Login page */
+.login-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+.login-brand {
+  background: #0f172a;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px;
+}
+
+.login-brand h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.login-brand p {
+  color: #94a3b8;
+  font-size: 16px;
+  margin: 0;
+}
+
+.login-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  padding: 48px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-card h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.login-card label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.login-error {
+  color: #dc2626;
+  font-size: 14px;
+  margin: 0;
+}
+
+.btn-loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Full-page spinner */
+.page-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
